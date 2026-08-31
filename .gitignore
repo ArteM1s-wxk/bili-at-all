@@ -1,0 +1,15 @@
+# 依赖
+node_modules/
+
+# 测试与本地工具（GitHub 只保留脚本 + README）
+test/
+package.json
+package-lock.json
+
+# 日志与图片
+*.log
+*.png
+
+# 系统/编辑器
+.DS_Store
+*.swp
