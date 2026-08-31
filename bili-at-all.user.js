@@ -1,9 +1,11 @@
 // ==UserScript==
 // @name         B站评论区一键@好友
-// @namespace    bili-at-all-cc
+// @namespace    https://github.com/ArteM1s-wxk/bili-at-all
 // @version      0.10.0
 // @description  B站视频评论区一键@群友：在设置界面维护 UID 列表，脚本自动解析为当前昵称，右下角一键把 @昵称 插入评论框（纯文本粘贴，由 B 站编辑器转真实提及节点），超长自动分批，由用户手动发送。
 // @author       ArteM1s-wxk
+// @homepageURL  https://github.com/ArteM1s-wxk/bili-at-all
+// @supportURL   https://github.com/ArteM1s-wxk/bili-at-all/issues
 // @match        *://www.bilibili.com/video/*
 // @match        *://bilibili.com/video/*
 // @grant        GM_getValue
