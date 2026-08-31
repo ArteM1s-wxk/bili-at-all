@@ -2,7 +2,7 @@
 // @name         B站评论区一键@好友
 // @namespace    https://github.com/ArteM1s-wxk/bili-at-all
 // @version      0.10.0
-// @description  B站视频评论区一键@群友：在设置界面维护 UID 列表，脚本自动解析为当前昵称，右下角一键把 @昵称 插入评论框（纯文本粘贴，由 B 站编辑器转真实提及节点），超长自动分批，由用户手动发送。
+// @description  B站视频评论区一键@群友：在设置界面维护 UID 列表，脚本自动解析为当前昵称，右下角一键把 @昵称 插入评论框（纯文本粘贴，由 B 站编辑器转真实提及节点），超过10人自动分批，由用户手动发送。
 // @author       ArteM1s-wxk
 // @homepageURL  https://github.com/ArteM1s-wxk/bili-at-all
 // @supportURL   https://github.com/ArteM1s-wxk/bili-at-all/issues
@@ -24,7 +24,7 @@
   // =====================================================================
   // 常量
   // =====================================================================
-  var COMMENT_LIMIT = 1000;          // B站单条评论字数上限（分批阈值）
+  var AT_LIMIT_PER_COMMENT = 10;   // B站单条评论@提及人数上限（分批阈值）
   var CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 昵称缓存有效期（24 小时）
   var CONCURRENCY = 10;              // 解析昵称的最大并发请求数
   var STORAGE_UIDS = 'biliAtAll_uids';
@@ -60,32 +60,21 @@
   }
 
   /**
-   * 把昵称列表按 maxLen 分组，保证每组拼接后的长度 <= maxLen。
-   * 单个昵称本身超过 maxLen 时也独立成组（不丢人，交给用户处理）。
+   * 把昵称列表按每批人数上限分组（B站单条评论@提及上限为 10 人）。
    * 返回数组的数组（每组是昵称子集）。
    */
-  function buildBatchNameGroups(names, maxLen) {
+  function buildBatchNameGroups(names, maxCount) {
     var groups = [];
-    var cur = [];
-    var curLen = 0;
-    for (var i = 0; i < names.length; i++) {
-      var piece = '@' + names[i] + ' ';
-      var addLen = curLen + piece.length;
-      if (cur.length > 0 && addLen > maxLen) {
-        groups.push(cur.slice());
-        cur = [];
-        curLen = 0;
-      }
-      cur.push(names[i]);
-      curLen += piece.length;
+    var n = Math.max(1, maxCount || 1);
+    for (var i = 0; i < names.length; i += n) {
+      groups.push(names.slice(i, i + n));
     }
-    if (cur.length > 0) groups.push(cur);
     return groups;
   }
 
-  /** 把昵称列表按 maxLen 分批为可直接插入的字符串 */
-  function buildBatches(names, maxLen) {
-    return buildBatchNameGroups(names, maxLen).map(formatMentions);
+  /** 把昵称列表按每批人数上限分批为可直接插入的字符串 */
+  function buildBatches(names, maxCount) {
+    return buildBatchNameGroups(names, maxCount).map(formatMentions);
   }
 
   /** 简易并发限流池：最多 limit 个任务同时进行 */
@@ -745,7 +734,7 @@
       toast('部分解析失败：' + res.failed.map(function (f) { return f.uid; }).join(',') + '，已跳过');
     }
 
-    var batches = buildBatches(res.names, COMMENT_LIMIT);
+    var batches = buildBatches(res.names, AT_LIMIT_PER_COMMENT);
     batchState = { batches: batches, idx: 0, names: res.names };
     updateAtButtonLabel();
     await insertBatch(editor, 0);
@@ -753,7 +742,7 @@
 
   async function insertBatch(editor, idx) {
     var text = batchState.batches[idx];
-    var batchNames = buildBatchNameGroups(batchState.names, COMMENT_LIMIT)[idx] || [];
+    var batchNames = buildBatchNameGroups(batchState.names, AT_LIMIT_PER_COMMENT)[idx] || [];
     var inserted = await insertIntoEditor(editor, text);
     if (!inserted.ok) {
       toast('插入失败：评论框无法写入内容，请手动粘贴', true);
@@ -819,7 +808,7 @@
       openSettings: openSettings,
       renderResults: renderResults,
       countNewlines: countNewlines,
-      COMMENT_LIMIT: COMMENT_LIMIT,
+      AT_LIMIT_PER_COMMENT: AT_LIMIT_PER_COMMENT,
     };
   }
 })();
