@@ -6,8 +6,16 @@
 
 ## 安装
 
+方式一：一键安装
 1. 浏览器安装油猴扩展（[Tampermonkey](https://www.tampermonkey.net/)）
 2. 打开 `bili-at-all.user.js`，油猴会自动弹出安装页 → 安装
+
+方式二：手动添加
+1. 浏览器安装油猴扩展（[Tampermonkey](https://www.tampermonkey.net/)）
+2. 打开 `bili-at-all.user.js`，全选并复制全部代码
+3. 点浏览器工具栏的油猴图标 → 「添加新脚本」（或「管理面板」→「+」）
+4. 清空编辑器默认内容 → 粘贴代码 → 保存（Ctrl+S）
+5. 打开任意 B 站视频页，右下角出现「@全部」按钮即安装成功
 
 ## 使用
 
